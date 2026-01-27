@@ -1,0 +1,124 @@
+name: fabric-1.21.4-server
+on:
+  workflow_dispatch:
+
+jobs:
+  minecraft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Playit Tunnel
+        run: |
+          echo "=== Starting Playit ==="
+          chmod +x playit-linux-amd64
+          
+          if [ -n "${{ secrets.PLAYIT_SECRET }}" ]; then
+            echo "${{ secrets.PLAYIT_SECRET }}" > playit.toml
+            echo "✔ Playit configured"
+          elif [ -f playit.toml ]; then
+            echo "✔ Using playit.toml"
+          fi
+          
+          while true; do
+            ./playit-linux-amd64 >/dev/null 2>&1 || sleep 5
+          done &
+          
+          echo "✔ Playit started"
+          sleep 10
+      
+      - name: Run Fabric Server
+        run: |
+          echo "=== Starting Fabric 1.21.4 Server ==="
+          
+          java -Xmx14G -Xms10G \
+            -XX:+UseG1GC \
+            -XX:+ParallelRefProcEnabled \
+            -XX:MaxGCPauseMillis=200 \
+            -XX:+UnlockExperimentalVMOptions \
+            -XX:+DisableExplicitGC \
+            -XX:+AlwaysPreTouch \
+            -XX:G1NewSizePercent=30 \
+            -XX:G1MaxNewSizePercent=40 \
+            -XX:G1HeapRegionSize=16M \
+            -XX:G1ReservePercent=20 \
+            -XX:G1HeapWastePercent=5 \
+            -XX:G1MixedGCCountTarget=4 \
+            -XX:InitiatingHeapOccupancyPercent=15 \
+            -XX:G1MixedGCLiveThresholdPercent=90 \
+            -XX:G1RSetUpdatingPauseTimePercent=5 \
+            -XX:SurvivorRatio=32 \
+            -XX:+PerfDisableSharedMem \
+            -XX:MaxTenuringThreshold=1 \
+            -jar server.jar nogui &
+          SERVER_PID=$!
+          
+          echo "✔ Server started (PID: $SERVER_PID)"
+          echo "⏳ Waiting 1 minute..."
+          sleep 60
+          
+          echo ""
+          echo "=== Server ONLINE ==="
+          echo "🎮 Fabric 1.21.4"
+          echo "💾 RAM: 14GB"
+          
+          MAX_TIME=20700
+          ELAPSED=0
+          
+          while [ $ELAPSED -lt $MAX_TIME ]; do
+            if ! kill -0 $SERVER_PID 2>/dev/null; then
+              echo "=== Server stopped ==="
+              break
+            fi
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+            if [ $((ELAPSED % 1800)) -eq 0 ]; then
+              echo "⏰ $((ELAPSED / 60)) minutes"
+            fi
+          done
+          
+          if kill -0 $SERVER_PID 2>/dev/null; then
+            kill -TERM $SERVER_PID 2>/dev/null || true
+            sleep 5
+            kill -9 $SERVER_PID 2>/dev/null || true
+          fi
+          
+          pkill playit-linux-amd64 2>/dev/null || true
+          echo "✔ Stopped"
+      
+      - name: Save changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          
+          if ! git diff --cached --quiet 2>/dev/null; then
+            git commit -m "Auto-save: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            git pull --rebase --autostash \
+              https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}.git
+            for i in {1..3}; do
+              git push https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}.git && break
+              sleep 10
+            done
+            echo "✔ Saved"
+          fi
+      
+      - name: Auto-retrigger
+        if: github.run_attempt < 3
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
+        run: |
+          runs=$(gh run list -w fabric-1.21.4-server.yml --json status -q \
+               '[.[] | select(.status=="queued" or .status=="in_progress")] | length')
+          
+          if [ "$runs" -le 1 ]; then
+            gh workflow run fabric-1.21.4-server.yml
+            echo "✔ Retriggered"
+          fi
