@@ -20,12 +20,13 @@ jobs:
           echo "=== Starting Playit ==="
           chmod +x playit-linux-amd64
           
-          if [ -n "${{ secrets.PLAYIT_SECRET }}" ]; then
-            echo "${{ secrets.PLAYIT_SECRET }}" > playit.toml
-            echo "✔ Playit configured"
-          elif [ -f playit.toml ]; then
-            echo "✔ Using playit.toml"
+          # Check if playit.toml exists
+          if [ ! -f playit.toml ]; then
+            echo "❌ Error: playit.toml not found!"
+            exit 1
           fi
+          
+          echo "✔ Using playit.toml"
           
           # Start playit and show output for debugging
           ./playit-linux-amd64 > playit.log 2>&1 &
@@ -60,7 +61,7 @@ jobs:
             -XX:+UseG1GC \
             -XX:+ParallelRefProcEnabled \
             -XX:MaxGCPauseMillis=200 \
-            -XX:+UnlockExperimentalVMOptions \
+            -XX:+UnlockExperentialVMOptions \
             -XX:+DisableExplicitGC \
             -XX:+AlwaysPreTouch \
             -XX:G1NewSizePercent=30 \
