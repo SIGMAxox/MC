@@ -15,59 +15,62 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Setup Playit Tunnel
+      - name: Setup Playit Tunnel  
         run: |
           echo "=== Starting Playit ==="
           chmod +x playit-linux-amd64
           
-          # Check if playit.toml exists
+          # Verify playit.toml exists
           if [ ! -f playit.toml ]; then
-            echo "❌ Error: playit.toml not found!"
+            echo "❌ playit.toml not found!"
             exit 1
           fi
           
           echo "✔ Using playit.toml"
           
-          # Set environment variables for better error handling
-          export RUST_BACKTRACE=1
+          # Try to create TUN device (might fail, that's ok)
+          sudo mkdir -p /dev/net 2>/dev/null || true
+          sudo mknod /dev/net/tun c 10 200 2>/dev/null || true
+          sudo chmod 666 /dev/net/tun 2>/dev/null || true
           
-          # Start playit and show output for debugging
-          ./playit-linux-amd64 > playit.log 2>&1 &
+          # Set environment variables
+          export PLAYIT_HEADLESS=1
+          export NO_COLOR=1
+          
+          # Start playit with stdbuf to disable buffering
+          echo "🚀 Starting playit agent..."
+          stdbuf -oL -eL ./playit-linux-amd64 > playit.log 2>&1 &
           PLAYIT_PID=$!
           
           echo "✔ Playit started (PID: $PLAYIT_PID)"
-          echo "⏳ Waiting for tunnel..."
+          echo "⏳ Waiting 20 seconds for initialization..."
           sleep 20
           
-          # Check if playit is still running
-          if ! kill -0 $PLAYIT_PID 2>/dev/null; then
-            echo "❌ Playit failed to start!"
-            if [ -f playit.log ]; then
-              echo "=== Playit Error Log ==="
-              cat playit.log
-              echo "======================="
-            fi
-            echo "⚠️ Continuing without tunnel (playit may need reconfiguration)"
+          # Show logs
+          echo "=== Playit Logs (last 50 lines) ==="
+          tail -50 playit.log 2>/dev/null || echo "No logs yet"
+          echo "==================================="
+          
+          # Check if still running
+          if ps -p $PLAYIT_PID > /dev/null 2>&1; then
+            echo "✔ Playit is running"
           else
-            echo "✔ Playit tunnel active"
-            if [ -f playit.log ]; then
-              echo "=== Playit Status ==="
-              tail -10 playit.log
-              echo "===================="
-            fi
+            echo "⚠️ Playit process died, checking logs..."
+            cat playit.log
+            echo ""
+            echo "⚠️ Playit failed but continuing anyway (server will work locally)"
           fi
           
-          # Keep playit running with auto-restart (run in background)
+          # Keep trying to restart playit in background
           (
             while true; do
-              if ! kill -0 $PLAYIT_PID 2>/dev/null; then
-                echo "⚠️ Playit died, restarting..."
-                export RUST_BACKTRACE=1
-                ./playit-linux-amd64 >> playit.log 2>&1 &
+              if ! ps -p $PLAYIT_PID > /dev/null 2>&1; then
+                echo "[$(date '+%H:%M:%S')] ⚠️ Restarting playit..."
+                stdbuf -oL -eL ./playit-linux-amd64 >> playit.log 2>&1 &
                 PLAYIT_PID=$!
-                sleep 5
+                sleep 15
               fi
-              sleep 30
+              sleep 45
             done
           ) &
       
@@ -127,7 +130,8 @@ jobs:
             kill -9 $SERVER_PID 2>/dev/null || true
           fi
           
-          pkill playit-linux-amd64 2>/dev/null || true
+          # Kill all playit processes
+          pkill -f "playit-linux-amd64" 2>/dev/null || true
           echo "✔ Stopped"
       
       - name: Save changes
