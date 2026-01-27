@@ -27,12 +27,30 @@ jobs:
             echo "✔ Using playit.toml"
           fi
           
-          while true; do
-            ./playit-linux-amd64 >/dev/null 2>&1 || sleep 5
-          done &
+          # Start playit and show output for debugging
+          ./playit-linux-amd64 > playit.log 2>&1 &
+          PLAYIT_PID=$!
           
-          echo "✔ Playit started"
-          sleep 10
+          echo "✔ Playit started (PID: $PLAYIT_PID)"
+          echo "⏳ Waiting for tunnel..."
+          sleep 15
+          
+          # Show playit status
+          if [ -f playit.log ]; then
+            echo "=== Playit Output ==="
+            tail -20 playit.log
+            echo "===================="
+          fi
+          
+          # Keep playit running with auto-restart
+          while true; do
+            if ! kill -0 $PLAYIT_PID 2>/dev/null; then
+              echo "⚠️ Playit died, restarting..."
+              ./playit-linux-amd64 >> playit.log 2>&1 &
+              PLAYIT_PID=$!
+            fi
+            sleep 30
+          done &
       
       - name: Run Fabric Server
         run: |
