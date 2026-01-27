@@ -28,30 +28,48 @@ jobs:
           
           echo "✔ Using playit.toml"
           
+          # Set environment variables for better error handling
+          export RUST_BACKTRACE=1
+          
           # Start playit and show output for debugging
           ./playit-linux-amd64 > playit.log 2>&1 &
           PLAYIT_PID=$!
           
           echo "✔ Playit started (PID: $PLAYIT_PID)"
           echo "⏳ Waiting for tunnel..."
-          sleep 15
+          sleep 20
           
-          # Show playit status
-          if [ -f playit.log ]; then
-            echo "=== Playit Output ==="
-            tail -20 playit.log
-            echo "===================="
+          # Check if playit is still running
+          if ! kill -0 $PLAYIT_PID 2>/dev/null; then
+            echo "❌ Playit failed to start!"
+            if [ -f playit.log ]; then
+              echo "=== Playit Error Log ==="
+              cat playit.log
+              echo "======================="
+            fi
+            echo "⚠️ Continuing without tunnel (playit may need reconfiguration)"
+          else
+            echo "✔ Playit tunnel active"
+            if [ -f playit.log ]; then
+              echo "=== Playit Status ==="
+              tail -10 playit.log
+              echo "===================="
+            fi
           fi
           
-          # Keep playit running with auto-restart
-          while true; do
-            if ! kill -0 $PLAYIT_PID 2>/dev/null; then
-              echo "⚠️ Playit died, restarting..."
-              ./playit-linux-amd64 >> playit.log 2>&1 &
-              PLAYIT_PID=$!
-            fi
-            sleep 30
-          done &
+          # Keep playit running with auto-restart (run in background)
+          (
+            while true; do
+              if ! kill -0 $PLAYIT_PID 2>/dev/null; then
+                echo "⚠️ Playit died, restarting..."
+                export RUST_BACKTRACE=1
+                ./playit-linux-amd64 >> playit.log 2>&1 &
+                PLAYIT_PID=$!
+                sleep 5
+              fi
+              sleep 30
+            done
+          ) &
       
       - name: Run Fabric Server
         run: |
@@ -61,7 +79,7 @@ jobs:
             -XX:+UseG1GC \
             -XX:+ParallelRefProcEnabled \
             -XX:MaxGCPauseMillis=200 \
-            -XX:+UnlockExperentialVMOptions \
+            -XX:+UnlockExperimentalVMOptions \
             -XX:+DisableExplicitGC \
             -XX:+AlwaysPreTouch \
             -XX:G1NewSizePercent=30 \
