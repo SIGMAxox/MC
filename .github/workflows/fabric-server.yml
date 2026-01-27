@@ -65,7 +65,7 @@ jobs:
         run: |
           echo "=== Starting Fabric 1.21.4 Server ==="
           
-          java -Xmx14G -Xms10G \
+          java -Xmx18G -Xms14G \
             -XX:+UseG1GC \
             -XX:+ParallelRefProcEnabled \
             -XX:MaxGCPauseMillis=200 \
