@@ -6,6 +6,10 @@ on:
     paths:
       - 'world.zip'  # يشتغل تلقائي لو رفعت world.zip جديد
 
+# إضافة صلاحيات الكتابة
+permissions:
+  contents: write
+
 jobs:
   extract-world:
     runs-on: ubuntu-latest
@@ -36,18 +40,7 @@ jobs:
           ls -la
       
       - name: Commit and Push Changes
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          
-          # إضافة المجلد المفكوك
-          git add world/
-          
-          # التحقق من وجود تغييرات
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "🗺️ Extract world folder from world.zip"
-            git push
-            echo "World folder pushed successfully!"
-          fi
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "🗺️ Extract world folder from world.zip"
+          file_pattern: "world/*"
