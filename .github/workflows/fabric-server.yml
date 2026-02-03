@@ -1,11 +1,17 @@
 name: fabric-1.21.4-server
+
 on:
   workflow_dispatch:
+
+# إضافة صلاحيات الكتابة
+permissions:
+  contents: write
 
 jobs:
   minecraft:
     runs-on: ubuntu-latest
     timeout-minutes: 360
+    
     steps:
       - uses: actions/checkout@v4
 
@@ -131,12 +137,7 @@ jobs:
           
           if ! git diff --cached --quiet 2>/dev/null; then
             git commit -m "Auto-save: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-            git pull --rebase --autostash \
-              https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}.git
-            for i in {1..3}; do
-              git push https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}.git && break
-              sleep 10
-            done
+            git push
             echo "✔ Saved"
           fi
       
