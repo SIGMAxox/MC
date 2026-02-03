@@ -1,0 +1,32 @@
+[16:48:08] [main/INFO]: Loading Minecraft 1.21.4 with Fabric Loader 0.18.4
+[16:48:08] [main/INFO]: Fabric is preparing JARs on first launch, this may take a few seconds...
+[16:48:08] [main/WARN]: Mod resolution failed
+[16:48:08] [main/INFO]: Immediate reason: [HARD_DEP_INCOMPATIBLE_PRESELECTED geyser-fabric 2.9.2-SNAPSHOT {depends minecraft @ [>=1.21.11]}, ROOT_FORCELOAD_SINGLE geyser-fabric 2.9.2-SNAPSHOT]
+[16:48:08] [main/INFO]: Reason: [HARD_DEP geyser-fabric 2.9.2-SNAPSHOT {depends minecraft @ [>=1.21.11]}, HARD_DEP cloud 2.0.0-beta.15 {depends minecraft @ [>=1.21.11]}, HARD_DEP fabric-permissions-api-v0 0.6.1 {depends minecraft @ [>=1.21.11]}, HARD_DEP viafabric-mc1144 0.4.17+91-main {depends minecraft @ [1.14.4]}, HARD_DEP viafabric-mc1152 0.4.17+91-main {depends minecraft @ [1.15.2]}, HARD_DEP viafabric-mc1165 0.4.17+91-main {depends minecraft @ [1.16.4 || 1.16.5]}, HARD_DEP viafabric-mc1171 0.4.17+91-main {depends minecraft @ [1.17.1]}, HARD_DEP viafabric-mc1182 0.4.17+91-main {depends minecraft @ [1.18.2]}, HARD_DEP viafabric-mc1194 0.4.17+91-main {depends minecraft @ [1.19.4]}, HARD_DEP viafabric-mc1201 0.4.17+91-main {depends minecraft @ [1.20 || 1.20.1]}, HARD_DEP viafabric-mc1204 0.4.17+91-main {depends minecraft @ [1.20.3 || 1.20.4]}, HARD_DEP viafabric-mc1206 0.4.17+91-main {depends minecraft @ [1.20.5 || 1.20.6]}]
+[16:48:08] [main/INFO]: SERVER environment disabled: [fabric-renderer-api-v1, fabric-model-loading-api-v1, fabric-keybindings-v0, cotton-client-commands, fabric-client-tags-api-v1, fabric-screen-api-v1, fabric-sound-api-v1, fabric-key-binding-api-v1, fabric-rendering-v1, fabric-renderer-indigo, fabric-blockrenderlayer-v1]
+[16:48:08] [main/INFO]: Fix: add [], remove [], replace [[geyser-fabric 2.9.2-SNAPSHOT] -> add:geyser-fabric 1 ([(-∞,∞)])]
+[16:48:08] [main/ERROR]: Incompatible mods found!
+net.fabricmc.loader.impl.FormattedException: Some of your mods are incompatible with the game or each other!
+A potential solution has been determined, this may resolve your problem:
+	 - Replace mod 'Geyser-Fabric' (geyser-fabric) 2.9.2-SNAPSHOT with any version that is compatible with:
+		 - minecraft 1.21.4
+More details:
+	 - Mod 'Geyser-Fabric' (geyser-fabric) 2.9.2-SNAPSHOT requires version 1.21.11 or later of 'Minecraft' (minecraft), but only the wrong version is present: 1.21.4!
+	 - Mod 'Cloud' (cloud) 2.0.0-beta.15 requires version 1.21.11 or later of 'Minecraft' (minecraft), but only the wrong version is present: 1.21.4!
+	 - Mod 'fabric-permissions-api' (fabric-permissions-api-v0) 0.6.1 requires version 1.21.11 or later of 'Minecraft' (minecraft), but only the wrong version is present: 1.21.4!
+	 - Mod 'ViaFabric for 1.14' (viafabric-mc1144) 0.4.17+91-main requires version 1.14.4 of 'Minecraft' (minecraft), but only the wrong version is present: 1.21.4!
+	 - Mod 'ViaFabric for 1.15' (viafabric-mc1152) 0.4.17+91-main requires version 1.15.2 of 'Minecraft' (minecraft), but only the wrong version is present: 1.21.4!
+	 - Mod 'ViaFabric for 1.16' (viafabric-mc1165) 0.4.17+91-main requires version 1.16.4 or version 1.16.5 of 'Minecraft' (minecraft), but only the wrong version is present: 1.21.4!
+	 - Mod 'ViaFabric for 1.17' (viafabric-mc1171) 0.4.17+91-main requires version 1.17.1 of 'Minecraft' (minecraft), but only the wrong version is present: 1.21.4!
+	 - Mod 'ViaFabric for 1.18' (viafabric-mc1182) 0.4.17+91-main requires version 1.18.2 of 'Minecraft' (minecraft), but only the wrong version is present: 1.21.4!
+	 - Mod 'ViaFabric for 1.19' (viafabric-mc1194) 0.4.17+91-main requires version 1.19.4 of 'Minecraft' (minecraft), but only the wrong version is present: 1.21.4!
+	 - Mod 'ViaFabric for 1.20.1' (viafabric-mc1201) 0.4.17+91-main requires version 1.20 or version 1.20.1 of 'Minecraft' (minecraft), but only the wrong version is present: 1.21.4!
+	 - Mod 'ViaFabric for 1.20.4' (viafabric-mc1204) 0.4.17+91-main requires version 1.20.3 or version 1.20.4 of 'Minecraft' (minecraft), but only the wrong version is present: 1.21.4!
+	 - Mod 'ViaFabric for 1.20.5/6' (viafabric-mc1206) 0.4.17+91-main requires version 1.20.5 or version 1.20.6 of 'Minecraft' (minecraft), but only the wrong version is present: 1.21.4!
+	at net.fabricmc.loader.impl.FormattedException.ofLocalized(FormattedException.java:51) ~[fabric-loader-0.18.4.jar:?]
+	at net.fabricmc.loader.impl.FabricLoaderImpl.load(FabricLoaderImpl.java:202) ~[fabric-loader-0.18.4.jar:?]
+	at net.fabricmc.loader.impl.launch.knot.Knot.init(Knot.java:142) ~[fabric-loader-0.18.4.jar:?]
+	at net.fabricmc.loader.impl.launch.knot.Knot.launch(Knot.java:66) [fabric-loader-0.18.4.jar:?]
+	at net.fabricmc.loader.impl.launch.knot.KnotServer.main(KnotServer.java:23) [fabric-loader-0.18.4.jar:?]
+	at net.fabricmc.loader.impl.launch.server.FabricServerLauncher.main(FabricServerLauncher.java:69) [fabric-loader-0.18.4.jar:?]
+	at net.fabricmc.installer.ServerLauncher.main(ServerLauncher.java:69) [server.jar:1.1.1]
